@@ -1,0 +1,35 @@
+name: SSH Server Workflow
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  ssh-server:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install SSH Server
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openssh-server
+          sudo systemctl start ssh
+          sudo mkdir -p /run/sshd
+
+      - name: Configure SSH
+        run: |
+          echo "PermitRootLogin yes" | sudo tee -a /etc/ssh/sshd_config
+          echo "PasswordAuthentication yes" | sudo tee -a /etc/ssh/sshd_config
+          echo "root:rynn" | sudo chpasswd
+          sudo systemctl restart ssh
+
+      - name: Display SSH Details
+        run: |
+          echo "Use the following details to connect via SSH:"
+          echo "ssh root@$(hostname -I | awk '{print $1}')"
+          echo "Password: rynn"
+
+      - name: Keep SSH Server Alive
+        run: sleep infinity
